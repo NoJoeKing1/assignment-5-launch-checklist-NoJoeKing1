@@ -3,17 +3,16 @@ require('isomorphic-fetch');
 
 function addDestinationInfo(document, name, diameter, star, distance, moons, imageUrl) {
    // Here is the HTML formatting for our mission target div.
-   /*
+   document.innerHTML = `
                 <h2>Mission Destination</h2>
                 <ol>
-                    <li>Name: </li>
-                    <li>Diameter: </li>
+                    <li>Name: ${name}</li>
+                    <li>Diameter: ${diameter}</li>
                     <li>Star: ${star}</li>
-                    <li>Distance from Earth: </li>
-                    <li>Number of Moons: </li>
+                    <li>Distance from Earth: ${distance}</li>
+                    <li>Number of Moons: ${moons}</li>
                 </ol>
-                <img src="">
-   */
+                <img src="${imageUrl}">`
 }
 
 function validateInput(testInput) {
@@ -29,52 +28,87 @@ function validateInput(testInput) {
 }
 
 function formSubmission(document, list, pilot, copilot, fuelLevel, cargoMass) {
+    let launchStatus = document.getElementById("launchStatus");
     if (validateInput(pilot) === "Empty" || validateInput(copilot) === "Empty"|| 
         validateInput(fuelLevel) === "Empty" || validateInput(cargoMass) === "Empty") {
-        alert("All fields required.");
-        event.preventDefault();
+        alert("All fields required!");
     }
-    if (validateInput(pilot) === "Is a Number") {
-        alert("Pilot name must be a string");
-        event.preventDefault();
+    else if (validateInput(pilot) === "Is a Number") {
+        alert("Make sure to enter valid information for each field!");
     }
-    if (validateInput(copilot) === "Is a Number") {
-        alert("Co-pilot name must be a string");
-        event.preventDefault();
+    else if (validateInput(copilot) === "Is a Number") {
+        alert("Make sure to enter valid information for each field!");
     }
-    if (validateInput(fuelLevel) === "Not a Number") {
-        alert("Fuel level must be a number");
-        event.preventDefault();
+    else if (validateInput(fuelLevel) === "Not a Number") {
+        alert("Make sure to enter valid information for each field!");
     }
-    if (validateInput(cargoMass) === "Not a Number") {
-        alert("Cargo mass must be a number");
-        event.preventDefault();
+    else if (validateInput(cargoMass) === "Not a Number") {
+        alert("Make sure to enter valid information for each field!");
     }
 
-    faultyItems.innerHTML = `
-    <ol>
-        <li id="pilotStatus" data-testid="pilotStatus">Pilot: ${pilot.value} Ready</li>
-        <li id="copilotStatus" data-testid="copilotStatus">Co-pilot: ${copilot.value} Ready</li>
-        <li id="fuelStatus" data-testid="fuelStatus">Fuel level high enough for launch</li>
-        <li id="cargoStatus" data-testid="cargoStatus">Cargo mass low enough for launch</li>
-    </ol>`
-    if (fuelLevel < 10000) {
+    if (fuelLevel.value < 10000 && cargoMass.value > 10000) {
+        launchStatus.innerHTML = "Shuttle not ready for launch";
+        launchStatus.style.color = "red";
         faultyItems.style.visibility = "visible";
+        faultyItems.innerHTML = `
+        <ol>
+            <li id="pilotStatus" data-testid="pilotStatus">Pilot ${pilot.value} Ready</li>
+            <li id="copilotStatus" data-testid="copilotStatus">Co-pilot ${copilot.value} Ready</li>
+            <li id="fuelStatus" data-testid="fuelStatus">Fuel level too low for launch</li>
+            <li id="cargoStatus" data-testid="cargoStatus">Cargo mass too high for launch</li>
+        </ol>` 
     }
-    console.log(faultyItems)
+    else if (fuelLevel.value < 10000) {
+        launchStatus.innerHTML = "Shuttle not ready for launch";
+        launchStatus.style.color = "red";
+        faultyItems.style.visibility = "visible";
+        faultyItems.innerHTML = `
+        <ol>
+            <li id="pilotStatus" data-testid="pilotStatus">Pilot ${pilot.value} Ready</li>
+            <li id="copilotStatus" data-testid="copilotStatus">Co-pilot ${copilot.value} Ready</li>
+            <li id="fuelStatus" data-testid="fuelStatus">Fuel level too low for launch</li>
+            <li id="cargoStatus" data-testid="cargoStatus">Cargo mass low enough for launch</li>
+        </ol>` 
+    }
+    else if (cargoMass.value > 10000) {
+        launchStatus.innerHTML = "Shuttle not ready for launch";
+        launchStatus.style.color = "red";
+        faultyItems.style.visibility = "visible";
+        faultyItems.innerHTML = `
+        <ol>
+            <li id="pilotStatus" data-testid="pilotStatus">Pilot ${pilot.value} Ready</li>
+            <li id="copilotStatus" data-testid="copilotStatus">Co-pilot ${copilot.value} Ready</li>
+            <li id="fuelStatus" data-testid="fuelStatus">Fuel level high enough for launch</li>
+            <li id="cargoStatus" data-testid="cargoStatus">Cargo mass too high for launch</li>
+        </ol>` 
+    }
+    else {
+        launchStatus.innerHTML = "Shuttle is ready for launch";
+        launchStatus.style.color = "green";
+        faultyItems.style.visibility = "visible";
+        faultyItems.innerHTML = `
+            <ol>
+                <li id="pilotStatus" data-testid="pilotStatus">Pilot ${pilot.value} Ready</li>
+                <li id="copilotStatus" data-testid="copilotStatus">Co-pilot ${copilot.value} Ready</li>
+                <li id="fuelStatus" data-testid="fuelStatus">Fuel level high enough for launch</li>
+                <li id="cargoStatus" data-testid="cargoStatus">Cargo mass low enough for launch</li>
+            </ol>`
+    }
 }
 
 
 async function myFetch() {
     let planetsReturned;
 
-    planetsReturned = await fetch().then( function(response) {
+    planetsReturned = await fetch('https://handlers.education.launchcode.org/static/planets.json').then( function(response) {
+        return response.json();
         });
 
     return planetsReturned;
 }
 
 function pickPlanet(planets) {
+    return planets[Math.floor((Math.random() * planets.length))]
 }
 
 module.exports.addDestinationInfo = addDestinationInfo;
